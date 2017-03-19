@@ -1,0 +1,23 @@
+{
+    "name": "exfriend/curl-tutorial",
+    "description": "Tutorial on cUrl",
+    "license":"MIT",
+    "autors":[
+    {
+        "name":"exfriend",
+            "email":"max-miksher@mail.ru"
+    }
+    ],
+    "minimum-stability":"dev",
+    "require": {
+        "coderockr/php-query": "dev-master"
+    },
+    "autoload":{
+        "psr-4":{
+            "App\\":"App/"
+        },
+        "files":[
+        "helpers.php"
+        ]
+    }
+}
