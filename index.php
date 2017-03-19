@@ -69,21 +69,43 @@ $time = microtime(true) - $start;//сохраняем время работы с
 printf('Чтение информации со страниц подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
 xprint($list_menu_items);
 /*------------------------------------------------------------------------------------------*/
-/*
- * 
-        
-        for ($i = 1; $i <= $list_menu_items[$key]['subcategories'][$keys]['count_page']; $i++) 
+
+
+/*--------------------------------парсим страницы--------------------------------------------*/
+
+foreach ($list_menu_items as $key => $category) {//проходим по всем категориям
+    foreach ($category['subcategories'] as $cat_key => $subcategory) {//проходим по всем подкатегориям
+        for ($i = 1; $i <= $subcategory['count_page']; $i++) 
         {
-            phpQuery::newDocument(file_get_contents($main_url.$list_menu_items[$key]['subcategories'][$keys]['link'].$page_get_request.$i));
-            foreach (pq('.catalog_main_table .ref_goods_n_p') as $q => $qq) 
+            $html_temp = file_get_contents($main_url . $subcategory['link'].$page_get_request.$i); //для каждой подкатегории нужно развернуть страницу и получить из нее данные
+            phpQuery::newDocument($html_temp);//создаем класс для этой страницы            
+            foreach (pq('.catalog_main_table .ref_goods_n_p') as $q => $qq) //проходим по всем товарам на страницу
             {
-                $id = pq($qq)->children('.l_class')->attr('id');
-                $link = pq($qq)->attr('href');
-                $price = pq($qq)->children('.price')->text();
-                $list_menu_items[$key]['subcategories'][$keys]['items'][$q]['id'] = $id;
-                $list_menu_items[$key]['subcategories'][$keys]['items'][$q]['link'] = $link;
-                $list_menu_items[$key]['subcategories'][$keys]['items'][$q]['price'] = preg_replace("/[^0-9]/", '', $price);
+                $id = pq($qq)->children('.l_class')->attr('id');    //вытаскиваем идентификатор товара
+                $link = pq($qq)->attr('href');                      //сылку на товар
+                if(!pq($qq)->children('.price')->children('ins'))   //цену на товар, новую и старую. если есть
+                {
+                    $price_old = preg_replace("/[^0-9]/", '',pq($qq)->children('.price')->text());
+                    $price_new = '';
+                }
+                else
+                {
+                    $price_old = preg_replace("/[^0-9]/", '',pq($qq)->children('.price ins')->text());
+                    $price_new = preg_replace("/[^0-9]/", '',pq($qq)->children('.price del')->text());
+                }
+                
+                $list_menu_items[$key]['subcategories'][$cat_key]['items'][$q]['id'] = $id;
+                $list_menu_items[$key]['subcategories'][$cat_key]['items'][$q]['link'] = $link;
+                $list_menu_items[$key]['subcategories'][$cat_key]['items'][$q]['price_old'] = $price_old;
+                $list_menu_items[$key]['subcategories'][$cat_key]['items'][$q]['price_new'] = $price_new;
             }
             phpQuery::unloadDocuments();
-        }*/
+        }
+    }
+}
+$time = microtime(true) - $start;//сохраняем время работы скрипта
+printf('Чтение информации о товарах завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
+xprint($list_menu_items);
+/*-------------------------------------------------------------------------------------------*/
+
 ?>
