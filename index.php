@@ -48,17 +48,29 @@ $time = microtime(true) - $start;//сохраняем время работы с
 printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
 /*-------------------------------------------------------------------*/
 
-xprint($list_menu_items);
 
-/*
- * $html_temp_sub = file_get_contents($main_url . $list_menu_items[$key]['subcategories'][$keys]['link']); 
-  phpQuery::newDocument($html_temp_sub);
-        $list_menu_items[$key]['subcategories'][$keys]['count_product'] = pq('.total.many>span:not(.active)')->text();
-  foreach (pq('.pager-bottom .pager .pageToInsert')->children('a') as $k => $v) {
+/*--------------------------получаем информацию о страницах для парсинга--------------------*/
+
+foreach ($list_menu_items as $key => $category) {//проходим по всем категориям
+    foreach ($category['subcategories'] as $cat_key => $subcategory) {//проходим по всем подкатегориям
+        $html_temp = file_get_contents($main_url . $subcategory['link']); //для каждой подкатегории нужно развернуть страницу и получить из нее данные
+        phpQuery::newDocument($html_temp);//создаем класс для этой страницы
+        
+        $list_menu_items[$key]['subcategories'][$cat_key]['count_product'] = pq('.total.many>span:not(.active)')->text();//выдираем количество продуктов подкатегории
+        foreach (pq('.pager-bottom .pager .pageToInsert')->children('a') as $k => $v) {//получаем количество страниц
             if ($k + 2 == pq('.pager-bottom .pager .pageToInsert')->children('a')->count())
-                $list_menu_items[$key]['subcategories'][$keys]['count_page'] = pq($v)->html();
+                $list_menu_items[$key]['subcategories'][$cat_key]['count_page'] = pq($v)->html();
         }
-        phpQuery::unloadDocuments();
+        
+        phpQuery::unloadDocuments();//убиваем класс страницы подкатегории
+    }
+}
+$time = microtime(true) - $start;//сохраняем время работы скрипта
+printf('Чтение информации со страниц подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
+xprint($list_menu_items);
+/*------------------------------------------------------------------------------------------*/
+/*
+ * 
         
         for ($i = 1; $i <= $list_menu_items[$key]['subcategories'][$keys]['count_page']; $i++) 
         {
