@@ -15,7 +15,7 @@ $list_menu_item_dom = pq('ul.topmenus')->children('li:not(.divider)'
         . ':not(.certificate)'); // получаем список категорий
 $list_menu_items = Array();//объявляем массив для данных
 
-/*получаем список категорий*/
+/*-----------------получаем список категорий-------------------------*/
 foreach ($list_menu_item_dom as $key => $value) {
 
     $li = pq($value)->children('a');//вытаскиваем элемент "ссылка"
@@ -27,25 +27,34 @@ foreach ($list_menu_item_dom as $key => $value) {
 }
 phpQuery::unloadDocuments();//убиваем класс для главной страницы, освобождаем место
 $time = microtime(true) - $start;//сохраняем время работы скрипта
-printf('Скрипт выполнялся %.4F сек.', $time);//вывводим время работы скрипта
-xprint($list_menu_items);
+printf('Чтение категорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
+/*-------------------------------------------------------------------*/
 
-/*$html_temp = file_get_contents($list_menu_items[$key]['link']);
-    phpQuery::newDocument($html_temp);
 
-    $list_submenu_item_dom = pq('ul.maincatalog-list-1')->children('li:not(.j-all-menu-item)');
-    foreach ($list_submenu_item_dom as $keys => $val) {
+/*-------------------получаем список подкатегорий--------------------*/
+foreach ($list_menu_items as $key => $value) {//пробегаем по всем категриям
+    $html_temp = file_get_contents($value['link']);//загружаем страницу категории
+    phpQuery::newDocument($html_temp);//инициализируем класс для страницыкатегории
+
+    $list_submenu_item_dom = pq('ul.maincatalog-list-1')->children('li:not(.j-all-menu-item)');//получаем список подкатегорий
+    foreach ($list_submenu_item_dom as $keys => $val) {//парсим список подкатегорий
         $li_submenu = pq($val)->children('a');
         $list_menu_items[$key]['subcategories'][$keys]['name'] = $li_submenu->html();
         $list_menu_items[$key]['subcategories'][$keys]['link'] = $li_submenu->attr('href');
-        
-        phpQuery::unloadDocuments();
-        
-        $html_temp_sub = file_get_contents($main_url . $list_menu_items[$key]['subcategories'][$keys]['link']);
-        phpQuery::newDocument($html_temp_sub);
-        $list_menu_items[$key]['subcategories'][$keys]['count_product'] = pq('.total.many>span:not(.active)')->text();
+    }
+    phpQuery::unloadDocuments();//убиваем класс для страницы категории освобождаем место
+}
+$time = microtime(true) - $start;//сохраняем время работы скрипта
+printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
+/*-------------------------------------------------------------------*/
 
-        foreach (pq('.pager-bottom .pager .pageToInsert')->children('a') as $k => $v) {
+xprint($list_menu_items);
+
+/*
+ * $html_temp_sub = file_get_contents($main_url . $list_menu_items[$key]['subcategories'][$keys]['link']); 
+  phpQuery::newDocument($html_temp_sub);
+        $list_menu_items[$key]['subcategories'][$keys]['count_product'] = pq('.total.many>span:not(.active)')->text();
+  foreach (pq('.pager-bottom .pager .pageToInsert')->children('a') as $k => $v) {
             if ($k + 2 == pq('.pager-bottom .pager .pageToInsert')->children('a')->count())
                 $list_menu_items[$key]['subcategories'][$keys]['count_page'] = pq($v)->html();
         }
@@ -64,6 +73,5 @@ xprint($list_menu_items);
                 $list_menu_items[$key]['subcategories'][$keys]['items'][$q]['price'] = preg_replace("/[^0-9]/", '', $price);
             }
             phpQuery::unloadDocuments();
-        }
-    }*/
+        }*/
 ?>
