@@ -1,26 +1,36 @@
 <?php
 
 require_once 'vendor/autoload.php';
-$start = microtime(true);
-$main_url = 'https://www.wildberries.ru';
-$page_get_request = '?page=';
-$html = file_get_contents($main_url);
-phpQuery::newDocument($html);
+$start = microtime(true);//начало отсчета времени работы скрипта
+$main_url = 'https://www.wildberries.ru';//адрес магазина
+$page_get_request = '?page=';//добавочный адрес страница
+$html = file_get_contents($main_url);//получаем главную страницу
+phpQuery::newDocument($html);//инициализация класса для главной страницы
 
-$list_menu_item_dom = pq('ul.topmenus')->children('li:not(.divider):not(.submenuless):not(.row-divider):not(.promo-offer):not(.brands):not(.certificate)');
+$list_menu_item_dom = pq('ul.topmenus')->children('li:not(.divider)'
+        . ':not(.submenuless)'
+        . ':not(.row-divider)'
+        . ':not(.promo-offer)'
+        . ':not(.brands)'
+        . ':not(.certificate)'); // получаем список категорий
+$list_menu_items = Array();//объявляем массив для данных
 
-$list_menu_items = Array();
-
+/*получаем список категорий*/
 foreach ($list_menu_item_dom as $key => $value) {
 
-    $li = pq($value)->children('a');
+    $li = pq($value)->children('a');//вытаскиваем элемент "ссылка"
 
-    if ($li->html() !== '' && $li->attr('href') !== '') {
-        $list_menu_items[$key]['name'] = $li->html();
-        $list_menu_items[$key]['link'] = $li->attr('href');
+    if ($li->html() !== '' && $li->attr('href') !== '') {   //если ссылка и имя не пустые
+        $list_menu_items[$key]['name'] = $li->html();       // то записываем название категории
+        $list_menu_items[$key]['link'] = $li->attr('href'); // и ссылку на ее страницу
     }
-    
-    $html_temp = file_get_contents($list_menu_items[$key]['link']);
+}
+phpQuery::unloadDocuments();//убиваем класс для главной страницы, освобождаем место
+$time = microtime(true) - $start;//сохраняем время работы скрипта
+printf('Скрипт выполнялся %.4F сек.', $time);//вывводим время работы скрипта
+xprint($list_menu_items);
+
+/*$html_temp = file_get_contents($list_menu_items[$key]['link']);
     phpQuery::newDocument($html_temp);
 
     $list_submenu_item_dom = pq('ul.maincatalog-list-1')->children('li:not(.j-all-menu-item)');
@@ -55,10 +65,5 @@ foreach ($list_menu_item_dom as $key => $value) {
             }
             phpQuery::unloadDocuments();
         }
-    }
-}
-$time = microtime(true) - $start;
-printf('Скрипт выполнялся %.4F сек.', $time);
-xprint($list_menu_items);
-phpQuery::unloadDocuments();
+    }*/
 ?>
