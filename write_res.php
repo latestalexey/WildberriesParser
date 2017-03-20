@@ -1,13 +1,55 @@
 <?php
 function a($list_menu_items, $link)
 {
-    # Фильтрация строк и вывод нужной информации
-    /*while ($row = mysql_fetch_object($result)) {
-        echo $row->name;
-    }*/
     foreach ($list_menu_items as $key => $value) {
         $query ="INSERT INTO `Category`(`cat_name`, `cat_link`, `date`) "
-            . "VALUES ('".$value['name']."','".$value['link']."','".date('d.m.Y')."')";
+            . "VALUES ('".$value['name']."','".$value['link']."','".date('Y').'.'.date('m').'.'.date('d')."')";
         $result = mysql_query($query) or die('Query failed: ' . mysql_error());
     }
+}
+
+function get_time_of_last_check()       //получает дату обновления категории и подкатегории
+{
+    $query['cat'] ="SELECT `date` FROM `Category` GROUP BY `date`";
+    $query['subcat'] ="SELECT `date` FROM `Subcategory` GROUP BY `date`";
+    $result_res = Array('cat'=>'','subcat'=>'');
+    $result = Array();
+    while ($value = current($query)) {
+        
+        $result[key($query)] = mysql_query($value) or die('Query failed: ' . mysql_error());
+        
+        while ($line = mysql_fetch_array($result[key($query)], MYSQL_ASSOC)) {
+            $result_res[key($query)] = $line['date'];
+        }
+        next($query);
+    }
+    return $result_res;
+}
+
+function pars_category()                                                //парсим категории
+{
+    global $main_url, $list_menu_items,$start;
+    
+    /*-----------------получаем список категорий-------------------------*/
+    $html = file_get_contents($main_url);                               //получаем главную страницу
+    phpQuery::newDocument($html);                                       //инициализация класса для главной страницы
+
+    $list_menu_item_dom = pq('ul.topmenus')->children('li:not(.divider)'
+            . ':not(.submenuless)'
+            . ':not(.row-divider)'
+            . ':not(.promo-offer)'
+            . ':not(.brands)'
+            . ':not(.certificate)');                                    // получаем список категорий
+    foreach ($list_menu_item_dom as $key => $value) {
+        $li = pq($value)->children('a');                                //вытаскиваем элемент "ссылка"
+
+        if ($li->html() !== '' && $li->attr('href') !== '') {           //если ссылка и имя не пустые
+            $list_menu_items[$key]['name'] = $li->html();               // то записываем название категории
+            $list_menu_items[$key]['link'] = $li->attr('href');         // и ссылку на ее страницу
+        }
+    }
+    phpQuery::unloadDocuments();                                        //убиваем класс для главной страницы, освобождаем место
+    $time = microtime(true) - $start;                                   //сохраняем время работы скрипта
+    printf('Чтение категорий завершено через %.4F сек.</br>', $time);   //вывводим время работы скрипта
+    /*-------------------------------------------------------------------*/
 }

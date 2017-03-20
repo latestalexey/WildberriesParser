@@ -1,37 +1,23 @@
 <?php 
 require_once 'vendor/autoload.php';
-require_once 'db_connect.php';
-require_once 'write_res.php';
-
+require_once 'db_connect.php';      //подключиться к базе
+require_once 'write_res.php';       //выполнение запросов к базе
 
 $start = microtime(true);                   //начало отсчета времени работы скрипта
+ 
 $main_url = 'https://www.wildberries.ru';   //адрес магазина
 $page_get_request = '?page=';               //добавочный адрес страница
-$html = file_get_contents($main_url);       //получаем главную страницу
-phpQuery::newDocument($html);               //инициализация класса для главной страницы
+$list_menu_items = Array();                 //объявляем массив для данных
 
-$list_menu_item_dom = pq('ul.topmenus')->children('li:not(.divider)'
-        . ':not(.submenuless)'
-        . ':not(.row-divider)'
-        . ':not(.promo-offer)'
-        . ':not(.brands)'
-        . ':not(.certificate)');             // получаем список категорий
-$list_menu_items = Array();                  //объявляем массив для данных
+if(date('Y').'.'.(date('m')+1).'.'.date('d')>get_time_of_last_check()) //если прошел месяц, парсим категории
+  echo get_time_of_last_check();  //pars_category();
+/*else                                        // если не пошел месяц, то получаем сразу подкатегории из базы
+    {
+        
+    }*/
 
-/*-----------------получаем список категорий-------------------------*/
-foreach ($list_menu_item_dom as $key => $value) {
-    $li = pq($value)->children('a');                                //вытаскиваем элемент "ссылка"
 
-    if ($li->html() !== '' && $li->attr('href') !== '') {           //если ссылка и имя не пустые
-        $list_menu_items[$key]['name'] = $li->html();               // то записываем название категории
-        $list_menu_items[$key]['link'] = $li->attr('href');         // и ссылку на ее страницу
-    }
-}
-phpQuery::unloadDocuments();                                        //убиваем класс для главной страницы, освобождаем место
-$time = microtime(true) - $start;                                   //сохраняем время работы скрипта
-printf('Чтение категорий завершено через %.4F сек.</br>', $time);   //вывводим время работы скрипта
-/*-------------------------------------------------------------------*/
-a($list_menu_items,$link);
+//a($list_menu_items,$link);
 
 /*-------------------получаем список подкатегорий--------------------*/
 //foreach ($list_menu_items as $key => $value) {                      //пробегаем по всем категриям
