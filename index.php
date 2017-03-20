@@ -9,12 +9,13 @@ $main_url = 'https://www.wildberries.ru';   //адрес магазина
 $page_get_request = '?page=';               //добавочный адрес страница
 $list_menu_items = Array();                 //объявляем массив для данных
 
-if(date('Y').'.'.(date('m')+1).'.'.date('d')>get_time_of_last_check()) //если прошел месяц, парсим категории
-  echo get_time_of_last_check();  //pars_category();
-/*else                                        // если не пошел месяц, то получаем сразу подкатегории из базы
+
+if((date('Y').'.'.(date('m')+1).'.'.date('d'))<get_time_of_last_check()) //если прошел месяц, парсим категории
+  pars_category();
+else                                        // если не пошел месяц, то получаем сразу подкатегории из базы
     {
         
-    }*/
+    }
 
 
 //a($list_menu_items,$link);

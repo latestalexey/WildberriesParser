@@ -10,20 +10,16 @@ function a($list_menu_items, $link)
 
 function get_time_of_last_check()       //получает дату обновления категории и подкатегории
 {
-    $query['cat'] ="SELECT `date` FROM `Category` GROUP BY `date`";
-    $query['subcat'] ="SELECT `date` FROM `Subcategory` GROUP BY `date`";
-    $result_res = Array('cat'=>'','subcat'=>'');
-    $result = Array();
-    while ($value = current($query)) {
+    $query ="SELECT `date` FROM `Category` GROUP BY `date`";
+    $result = '';
         
-        $result[key($query)] = mysql_query($value) or die('Query failed: ' . mysql_error());
+        $result_q = mysql_query($query) or die('Query failed: ' . mysql_error());
         
-        while ($line = mysql_fetch_array($result[key($query)], MYSQL_ASSOC)) {
-            $result_res[key($query)] = $line['date'];
+        while ($line = mysql_fetch_array($result_q, MYSQL_ASSOC)) {
+            $result = $line['date'];
         }
-        next($query);
-    }
-    return $result_res;
+    
+    return $result;
 }
 
 function pars_category()                                                //парсим категории
@@ -50,6 +46,6 @@ function pars_category()                                                //пар
     }
     phpQuery::unloadDocuments();                                        //убиваем класс для главной страницы, освобождаем место
     $time = microtime(true) - $start;                                   //сохраняем время работы скрипта
-    printf('Чтение категорий завершено через %.4F сек.</br>', $time);   //вывводим время работы скрипта
+    //printf('Чтение категорий завершено через %.4F сек.</br>', $time);   //вывводим время работы скрипта
     /*-------------------------------------------------------------------*/
 }
