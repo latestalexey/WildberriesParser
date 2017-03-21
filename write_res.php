@@ -108,10 +108,6 @@ function pars_subcategory()
         phpQuery::unloadDocuments();      //убиваем класс для страницы категории освобождаем место
     } //получили список категорий с сайта
     
-    //проверяем на повторяющиеся подкатегории, при повторении остается только одна первая
-    
-    
-    
     foreach ($list_menu_items_tmp as $k => $val) { //внесли все категории в базу
         foreach ($val as $key => $value) {//вносим подкатегории в базу
             $query = "INSERT INTO `Subcategory`(`cat_id`, `subcat_name`, `subcat_link`, `date`) "
@@ -121,7 +117,7 @@ function pars_subcategory()
                     . date('Y') . '.' 
                     . date('m') . '.' 
                     . date('d') . "')";
-            $result = mysql_query($query) or die('Query failed: ' . mysql_error());
+            $result = mysql_query($query);
         }
     }
     
