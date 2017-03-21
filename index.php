@@ -10,32 +10,14 @@ $page_get_request = '?page=';               //добавочный адрес с
 $list_menu_items = Array();                 //объявляем массив для данных
 
 
-if((date('Y').'.'.(date('m')+1).'.'.date('d'))<get_time_of_last_check()) //если прошел месяц, парсим категории
-  pars_category();
-else                                        // если не пошел месяц, то получаем сразу подкатегории из базы
-    {
-        
-    }
+get_categiry();                             //получам категории и подкатегории в переменную
+
+xprint($list_menu_items);
+
+//if((date('Y').'.'.(date('m')+1).'.'.date('d'))<get_time_of_last_check()) 
 
 
-//a($list_menu_items,$link);
 
-/*-------------------получаем список подкатегорий--------------------*/
-//foreach ($list_menu_items as $key => $value) {                      //пробегаем по всем категриям
-//    $html_temp = file_get_contents($value['link']);                 //загружаем страницу категории
-//    phpQuery::newDocument($html_temp);                              //инициализируем класс для страницыкатегории
-//
-//    $list_submenu_item_dom = pq('ul.maincatalog-list-1')->children('li:not(.j-all-menu-item)'); //получаем список подкатегорий
-//    foreach ($list_submenu_item_dom as $keys => $val) {                                         //парсим список подкатегорий
-//        $li_submenu = pq($val)->children('a');
-//        $list_menu_items[$key]['subcategories'][$keys]['name'] = $li_submenu->html();
-//        $list_menu_items[$key]['subcategories'][$keys]['link'] = $li_submenu->attr('href');
-//    }
-//    phpQuery::unloadDocuments();                                    //убиваем класс для страницы категории освобождаем место
-//}
-//$time = microtime(true) - $start;                                   //сохраняем время работы скрипта
-//printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
-/*-------------------------------------------------------------------*/
 //
 //
 ///*--------------------------получаем информацию о страницах для парсинга--------------------*/
