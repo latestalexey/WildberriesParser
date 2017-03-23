@@ -48,7 +48,12 @@ function pars_category()                                                //пар
     global $main_url, $list_menu_items;
     
     /*-----------------получаем список категорий-------------------------*/
-    $html = file_get_contents($main_url);                               //получаем главную страницу
+    $b = curl_init($main_url);
+    curl_setopt($b,CURLOPT_CONNECTTIMEOUT,10);
+    curl_setopt($b,CURLOPT_HEADER,true);
+    curl_setopt($b,CURLOPT_RETURNTRANSFER,true);
+    $html = curl_exec($b);                                              //получаем главную страницу
+    curl_close($b);
     phpQuery::newDocument($html);                                       //инициализация класса для главной страницы
 
     $list_menu_item_dom = pq('ul.topmenus')->children('li:not(.divider)'
@@ -95,7 +100,14 @@ function pars_subcategory()
     /*-------------------получаем список подкатегорий--------------------*/
     $list_menu_items_tmp = null;
     foreach ($list_menu_items as $key => $value) {                      //пробегаем по всем категриям
-        $html_temp = file_get_contents($value['link']);                 //загружаем страницу категории
+                 
+        $b = curl_init($value['link']);                                 //загружаем страницу категории
+        curl_setopt($b,CURLOPT_CONNECTTIMEOUT,10);
+        curl_setopt($b,CURLOPT_HEADER,true);
+        curl_setopt($b,CURLOPT_RETURNTRANSFER,true);
+        $html_temp = curl_exec($b);                                              //получаем главную страницу
+        curl_close($b);
+        
         phpQuery::newDocument($html_temp);                              //инициализируем класс для страницыкатегории
 
         $list_submenu_item_dom = pq('ul.maincatalog-list-1')->children('li:not(.j-all-menu-item)'); //получаем список подкатегорий

@@ -11,32 +11,47 @@ $page_size = '&pagesize=200';               //выводить по 200 това
 $list_menu_items = Array();                 //объявляем массив для данных
 
 
-//get_categiry();                             //получам категории и подкатегории в переменную
+get_categiry();                             //получам категории и подкатегории в переменную
 
-//сначала мы должны получить количество товаров и страниц для запуска цикла парсинга
-//в дальнейшем эта функция будет следить за количеством товара и страниц во время парсинга
-//get_inf_of_count_item();
-?><pre><?
-/*foreach ($list_menu_items as $cat_key => $cat_value) {
-    foreach ($cat_value["subcategories"] as $subcat_key => $subcat_value) {
-        //pars_page();
-        echo  ($subcat_value['name'].'</br>');
+$urls = Array();                            //список первых страниц каждой подкатегории
+foreach ($list_menu_items as $catkey => $catvalue) {
+    foreach ($catvalue['subcategories'] as $subcatkey => $subcatvalue) {
+        $urls[count($urls)] = 'https://www.wildberries.ru'.$subcatvalue['link'].$page_get_request.'1';
     }
-}*/
-$a=1;
-
-while($c = curl_init('https://www.wildberries.ru/catalog/obuv/dlya-novorozhdennyh?page='.$a)){
-    //phpQuery::newDocument($html_temp);
-    
- 
-
-
-    
-
-    //curl_exec($c);
-    //phpQuery::unloadDocuments();
-    $a++;
 }
-//var_dump($a);
 
-?></pre>
+$multi = curl_multi_init();
+$handles = Array();
+foreach ($urls as $key => $url) 
+{
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_HEADER, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($ch, CURLOPT_NOBODY, true);
+    
+    curl_multi_add_handle($multi, $ch);
+    $handles[$url] = $ch;
+}
+
+$active = null;
+do {
+    $mrc = curl_multi_exec($multi, $active);
+} while ($mrc == CURLM_CALL_MULTI_PERFORM);
+
+while ($active && $mrc == CURLM_OK) {
+    if (curl_multi_select($multi) == -1) {
+        usleep(100);
+    }
+    do {
+        $mrc = curl_multi_exec($multi, $active);
+    } while ($mrc == CURLM_CALL_MULTI_PERFORM);
+}
+
+foreach ($handles as $key => $channel) {
+    $html[$channel] = curl_multi_getcontent($channel);
+    xprint($key);
+    
+    curl_multi_remove_handle($multi, $channel);
+}
+curl_multi_close($multi);
+xprint($html);
