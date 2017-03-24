@@ -2,7 +2,7 @@
 
 require_once 'vendor/autoload.php';
 $start = microtime(true);//начало отсчета времени работы скрипта
-$main_url = 'https://www.wildberries.ru';//адрес магазина
+$main_url = 'http://www.d2office.ru/brands/netgear.html?limit=80&p=';//адрес магазина
 $page_get_request = '?page=';//добавочный адрес страница
 $html = file_get_contents($main_url);//получаем главную страницу
 phpQuery::newDocument($html);//инициализация класса для главной страницы
@@ -16,7 +16,7 @@ $list_menu_item_dom = pq('ul.topmenus')->children('li:not(.divider)'
 $list_menu_items = Array();//объявляем массив для данных
 
 /*-----------------получаем список категорий-------------------------*/
-foreach ($list_menu_item_dom as $key => $value) {
+/*foreach ($list_menu_item_dom as $key => $value) {
 
     $li = pq($value)->children('a');//вытаскиваем элемент "ссылка"
 
@@ -28,11 +28,12 @@ foreach ($list_menu_item_dom as $key => $value) {
 phpQuery::unloadDocuments();//убиваем класс для главной страницы, освобождаем место
 $time = microtime(true) - $start;//сохраняем время работы скрипта
 printf('Чтение категорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
+ */
 /*-------------------------------------------------------------------*/
 
 
 /*-------------------получаем список подкатегорий--------------------*/
-foreach ($list_menu_items as $key => $value) {//пробегаем по всем категриям
+/*foreach ($list_menu_items as $key => $value) {//пробегаем по всем категриям
     $html_temp = file_get_contents($value['link']);//загружаем страницу категории
     phpQuery::newDocument($html_temp);//инициализируем класс для страницыкатегории
 
@@ -45,36 +46,71 @@ foreach ($list_menu_items as $key => $value) {//пробегаем по всем
     phpQuery::unloadDocuments();//убиваем класс для страницы категории освобождаем место
 }
 $time = microtime(true) - $start;//сохраняем время работы скрипта
-printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
+printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта*/
 /*-------------------------------------------------------------------*/
 
+$list_item =Array();
+$count_page = 1;
+$file_string = '';
+/*--------------------------собираем список карточек--------------------*/
+for($i=1;$i<=$count_page;$i++)
+{
+    
+    /********собираем максимальную страницу**********/
+    $html_temp = file_get_contents($main_url.$i); //для каждой подкатегории нужно развернуть страницу и получить из нее данные
+    phpQuery::newDocument($html_temp);//создаем класс для этой страницы
+    foreach (pq('.toolbar-bottom .pages.gen-direction-arrows1 li:not(.next):not(.previous):not(.current)')->children('a') as $k => $v) {//получаем количество страниц
+        if((int)(pq($v)->html())>=$count_page)
+        $count_page = (int)(pq($v)->html());
+    }
+    /**************************************************/
+    
+    foreach (pq('.product-name')->children('a') as $k => $v) {//получаем количество страниц
+        $list_item[$k]['link'] = pq($v)->attr('href');
+    }
+    phpQuery::unloadDocuments();//убиваем класс страницы подкатегории
+}
+       
+foreach ($list_item as $key => $value) {
+    $h = file_get_contents($list_item[$key]['link']); 
+    phpQuery::newDocument($h);
+    //$list_item[$key]['article'] = pq('.sku .value')->text();
+    //$list_item[$key]['description'] = pq('.panel .std')->html();
+    
+    //$file_string .= (string)(pq('.sku .value')->text()).';'.trim ((string)(pq('.panel .std')->text())," \t\n\r\0\x0B").';';
+    
+    $current = file_get_contents('NETGEAR.csv');
+    $current .= pq('.sku .value')->text().';'.pq('.panel .std')->html().';\n';
+    file_put_contents('NETGEAR.csv',$current);
+    phpQuery::unloadDocuments();
+}
 
-/*--------------------------получаем информацию о страницах для парсинга--------------------*/
 
-foreach ($list_menu_items as $key => $category) {//проходим по всем категориям
-    foreach ($category['subcategories'] as $cat_key => $subcategory) {//проходим по всем подкатегориям
-        $html_temp = file_get_contents($main_url . $subcategory['link']); //для каждой подкатегории нужно развернуть страницу и получить из нее данные
+$time = microtime(true) - $start;
+printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);
+//xprint($list_item);
+//foreach ($list_menu_items as $key => $category) {//проходим по всем категориям
+    //foreach ($category['subcategories'] as $cat_key => $subcategory) {//проходим по всем подкатегориям
+        /*$html_temp = file_get_contents($main_url.'1'); //для каждой подкатегории нужно развернуть страницу и получить из нее данные
         phpQuery::newDocument($html_temp);//создаем класс для этой страницы
         
-        $list_menu_items[$key]['subcategories'][$cat_key]['count_product'] = pq('.total.many>span:not(.active)')->text();//выдираем количество продуктов подкатегории
-        foreach (pq('.pager-bottom .pager .pageToInsert')->children('a') as $k => $v) {//получаем количество страниц
-            if ($k + 2 == pq('.pager-bottom .pager .pageToInsert')->children('a')->count())
-                $list_menu_items[$key]['subcategories'][$cat_key]['count_page'] = pq($v)->html();
+        //$list_menu_items[$key]['subcategories'][$cat_key]['count_product'] = pq('.total.many>span:not(.active)')->text();//выдираем количество продуктов подкатегории
+        foreach (pq('.toolbar-bottom .pages.gen-direction-arrows1 li')->children('a') as $k => $v) {//получаем количество страниц
+            //if ($k + 2 == pq('.pager-bottom .pager .pageToInsert')->children('a')->count())
+                $count_page[$k] = pq($v)->html();
         }
-        
+//        $count_page = pq('.toolbar-bottom .pages.gen-direction-arrows1')->html();
         phpQuery::unloadDocuments();//убиваем класс страницы подкатегории
-    }
-}
-$time = microtime(true) - $start;//сохраняем время работы скрипта
-printf('Чтение информации со страниц подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
+    //}*/
+//}
 /*------------------------------------------------------------------------------------------*/
 
 
 /*--------------------------------парсим страницы--------------------------------------------*/
-
+/*
 foreach ($list_menu_items as $key => $category) {//проходим по всем категориям
     foreach ($category['subcategories'] as $cat_key => $subcategory) {//проходим по всем подкатегориям
-        for ($i = 1; $i <=$subcategory['count_page']; $i++) 
+        for ($i = 1; $i <= $subcategory['count_page']; $i++) 
         {
             $html_temp = file_get_contents($main_url . $subcategory['link'].$page_get_request.$i); //для каждой подкатегории нужно развернуть страницу и получить из нее данные
             phpQuery::newDocument($html_temp);//создаем класс для этой страницы            
@@ -82,16 +118,15 @@ foreach ($list_menu_items as $key => $category) {//проходим по все�
             {
                 $id = pq($qq)->children('.l_class')->attr('id');    //вытаскиваем идентификатор товара
                 $link = pq($qq)->attr('href');                      //сылку на товар
-                  
-                if(pq($qq)->children('.price')->children('ins')->html()=='')   //цену на товар, новую и старую. если есть
+                if(!pq($qq)->children('.price')->children('ins'))   //цену на товар, новую и старую. если есть
                 {
                     $price_old = preg_replace("/[^0-9]/", '',pq($qq)->children('.price')->text());
                     $price_new = '';
                 }
                 else
                 {
-                    $price_old = preg_replace("/[^0-9]/", '',pq($qq)->children('.price')->children('ins')->text());
-                    $price_new = preg_replace("/[^0-9]/", '',pq($qq)->children('.price')->children('del')->text());
+                    $price_old = preg_replace("/[^0-9]/", '',pq($qq)->children('.price ins')->text());
+                    $price_new = preg_replace("/[^0-9]/", '',pq($qq)->children('.price del')->text());
                 }
                 
                 $list_menu_items[$key]['subcategories'][$cat_key]['items'][$q]['id'] = $id;
@@ -105,7 +140,7 @@ foreach ($list_menu_items as $key => $category) {//проходим по все�
 }
 $time = microtime(true) - $start;//сохраняем время работы скрипта
 printf('Чтение информации о товарах завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
-//xprint($list_menu_items);
+xprint($list_menu_items);*/
 /*-------------------------------------------------------------------------------------------*/
 
 ?>
