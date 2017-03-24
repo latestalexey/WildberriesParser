@@ -17,14 +17,35 @@ get_categiry();                             //получам категории 
 $urls = Array();                            //список первых страниц каждой подкатегории
 foreach ($list_menu_items as $catkey => $catvalue) {
     foreach ($catvalue['subcategories'] as $subcatkey => $subcatvalue) {
-        $urls[count($urls)] = 'https://www.wildberries.ru'.$subcatvalue['link'].$page_get_request.'1';
+        $urls[count($urls)] = $main_url.$subcatvalue['link'];
     }
 }
 
-$urls = array_chunk($urls, 20);            //разбили массив категорий на пакеты
+//$urls = array_chunk($urls, 20);            //разбили массив категорий на пакеты
 
-foreach ($urls as $key => $value) {        // спарсили каждый пакет
+/*foreach ($urls as $key => $value) {        // спарсили каждый пакет
     $htmls[$key] = multyrequest($value);
-    
+}*/
+
+
+foreach ($urls as $key => $url) {
+    $ex=true;
+    while($ex) 
+    {
+        $pages_array = Array();                         //массив страниц
+        $htmls = Array();                               //массив с ответами
+        $corent_page = 1;                               //текущая страница
+        for($i=$corent_page;$i<$corent_page+20;$i++)    //собрали массив страниц для парсинга
+        {
+            if($i!=1)
+                $pages_array[count($pages_array)] = $main_url.$subcatvalue['link'].$page_get_request.$i;
+            else
+                $pages_array[count($pages_array)] = $main_url.$subcatvalue['link'];
+        }
+        
+        $htmls = multyrequest($pages_array);            //солучили ответ со страницами
+        
+        $ex=false;
+    }
+    xd($htmls);
 }
-xprint();
