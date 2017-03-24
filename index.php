@@ -94,12 +94,6 @@ foreach ($list_item as $key => $value) {
     phpQuery::unloadDocuments();
 }
 
- 
-# Выбор базы данных
-
-
-xprint($val_query);
-xprint($val_query);
 xprint(count($list_item));
 $time = microtime(true) - $start;
 printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);
