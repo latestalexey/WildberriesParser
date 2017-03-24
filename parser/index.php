@@ -3,6 +3,11 @@ require_once '../vendor/autoload.php';
 require_once '../db_connect.php';      //подключиться к базе
 require_once '../write_res.php';       //выполнение запросов к базе
 
+ use Guzzle\Http\Client;
+ use Guzzle\Http\EntityBody;
+ use Guzzle\Http\Message\Request;
+ use Guzzle\Http\Message\Response;
+
 $start = microtime(true);                   //начало отсчета времени работы скрипта
  
 $main_url = 'https://www.wildberries.ru';   //адрес магазина
@@ -48,8 +53,8 @@ while ($active && $mrc == CURLM_OK) {
 }
 
 foreach ($handles as $key => $channel) {
-    $html[$channel] = curl_multi_getcontent($channel);
-    xprint($key);
+    $html[$key] = curl_multi_getcontent($channel);
+    
     
     curl_multi_remove_handle($multi, $channel);
 }

@@ -18,7 +18,7 @@ function get_categiry() { //получаем категории из базы
         pars_category();   //база пуста, парсим, сохраняем категории в базу и переменную
     }
     /*--------------- канец запросов на категории -------------------*/
-//xprint($list_menu_items);
+    
     /*--------------- запросы на подкатегории -----------------------*/
     $result = null;
     $query_to_get_subcategoru = "SELECT `cat_id`,`subcat_id`,`subcat_name`,`subcat_link` FROM `Subcategory`"; //составляем запрос к базе
@@ -64,8 +64,9 @@ function pars_category()                                                //пар
             . ':not(.certificate)');                                    // получаем список категорий
     foreach ($list_menu_item_dom as $key => $value) {
         $li = pq($value)->children('a');                                //вытаскиваем элемент "ссылка"
-
-        if ($li->html() !== '' && $li->attr('href') !== '') {           //если ссылка и имя не пустые
+            
+        if ($li->html() !== '' && $li->attr('href') !== '' && (bool)strripos( $li->attr('href'),'aspx')==false) 
+        {           //если ссылка и имя не пустые
             $list_menu_items_tmp[$key]['name'] = $li->html();               // то записываем название категории
             $list_menu_items_tmp[$key]['link'] = $li->attr('href');         // и ссылку на ее страницу
         }
@@ -113,9 +114,13 @@ function pars_subcategory()
         $list_submenu_item_dom = pq('ul.maincatalog-list-1')->children('li:not(.j-all-menu-item)'); //получаем список подкатегорий
         foreach ($list_submenu_item_dom as $keys => $val) {                                         //парсим список подкатегорий
             $li_submenu = pq($val)->children('a');
-            $list_menu_items_tmp[$key][$keys]['cat_id'] = $value['id'];
-            $list_menu_items_tmp[$key][$keys]['name'] = $li_submenu->html();
-            $list_menu_items_tmp[$key][$keys]['link'] = $li_submenu->attr('href');
+            
+            if((bool)strripos( $li_submenu->attr('href'),'aspx')==false)
+            {
+                $list_menu_items_tmp[$key][$keys]['cat_id'] = $value['id'];
+                $list_menu_items_tmp[$key][$keys]['name'] = $li_submenu->html();
+                $list_menu_items_tmp[$key][$keys]['link'] = $li_submenu->attr('href');
+            }
         }
         phpQuery::unloadDocuments();      //убиваем класс для страницы категории освобождаем место
     } //получили список категорий с сайта
