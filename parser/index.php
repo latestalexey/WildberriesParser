@@ -10,6 +10,7 @@ $main_url = 'https://www.wildberries.ru';   //адрес магазина
 $page_get_request = '?page=';               //добавочный адрес страница
 $page_size = '&pagesize=200';               //выводить по 200 товаров на страницу
 $list_menu_items = Array();                 //объявляем массив для данных
+$max_connet = 1;
 
 
 get_categiry();                             //получам категории и подкатегории в переменную
@@ -27,25 +28,38 @@ foreach ($list_menu_items as $catkey => $catvalue) {
     $htmls[$key] = multyrequest($value);
 }*/
 
-
-foreach ($urls as $key => $url) {
+$start = microtime(true);//начало отсчета времени работы скрипта
+//foreach ($urls as $key => $url) {
     $ex=true;
+    $corent_page = 1;                                   //текущая страница
     while($ex) 
     {
         $pages_array = Array();                         //массив страниц
-        $htmls = Array();                               //массив с ответами
-        $corent_page = 1;                               //текущая страница
-        for($i=$corent_page;$i<$corent_page+20;$i++)    //собрали массив страниц для парсинга
+        $htmls = Array();                               //массив с ответами                           
+        for($i=$corent_page;$i<$corent_page+$max_connet;$i++)    //собрали массив страниц для парсинга
         {
             if($i!=1)
-                $pages_array[count($pages_array)] = $main_url.$subcatvalue['link'].$page_get_request.$i;
+                $pages_array[count($pages_array)] = $urls[0].$page_get_request.$i;
             else
-                $pages_array[count($pages_array)] = $main_url.$subcatvalue['link'];
+                $pages_array[count($pages_array)] = $urls[0];
         }
         
-        $htmls = multyrequest($pages_array);            //солучили ответ со страницами
+        $corent_page = $corent_page+$max_connet;
         
-        $ex=false;
+        $htmls = multyrequest($pages_array);            //солучили ответ со страницами
+        xprint($htmls);
+        foreach ($htmls as $key => $html) {
+            if(strpos($html['head'], 'HTTP/1.1 200 OK')!=FALSE)
+            {
+                unset($htmls[$key]);
+                $ex=false;
+            } 
+            
+        }
+        if($corent_page>=$max_connet)$ex=false;
+        
     }
-    xd($htmls);
-}
+    
+//}
+$time = microtime(true) - $start;//сохраняем время работы скрипта
+printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
