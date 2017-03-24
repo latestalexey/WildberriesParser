@@ -2,9 +2,9 @@
 
 require_once 'vendor/autoload.php';
 $start = microtime(true);//начало отсчета времени работы скрипта
-$main_url = 'http://www.d2office.ru/brands/netgear.html?limit=80&p=';//адрес магазина
+$main_url = 'http://www.d2office.ru/brands/d-link.html=80&p=';//адрес магазина
 $page_get_request = '?page=';//добавочный адрес страница
-$html = file_get_contents($main_url);//получаем главную страницу
+//$html = file_get_contents($main_url);//получаем главную страницу
 phpQuery::newDocument($html);//инициализация класса для главной страницы
 
 $list_menu_item_dom = pq('ul.topmenus')->children('li:not(.divider)'
@@ -14,6 +14,8 @@ $list_menu_item_dom = pq('ul.topmenus')->children('li:not(.divider)'
         . ':not(.brands)'
         . ':not(.certificate)'); // получаем список категорий
 $list_menu_items = Array();//объявляем массив для данных
+
+
 
 /*-----------------получаем список категорий-------------------------*/
 /*foreach ($list_menu_item_dom as $key => $value) {
@@ -66,11 +68,12 @@ for($i=1;$i<=$count_page;$i++)
     /**************************************************/
     
     foreach (pq('.product-name')->children('a') as $k => $v) {//получаем количество страниц
-        $list_item[$k]['link'] = pq($v)->attr('href');
+        $list_item[count($list_item)]['link'] = pq($v)->attr('href');
     }
     phpQuery::unloadDocuments();//убиваем класс страницы подкатегории
 }
-       
+mysql_connect('localhost', 'root', '') or die('Could not connect: ' . mysql_error());
+mysql_select_db('WildberriesParser') or die('Не могу выбрать базу данных');
 foreach ($list_item as $key => $value) {
     $h = file_get_contents($list_item[$key]['link']); 
     phpQuery::newDocument($h);
@@ -79,13 +82,25 @@ foreach ($list_item as $key => $value) {
     
     //$file_string .= (string)(pq('.sku .value')->text()).';'.trim ((string)(pq('.panel .std')->text())," \t\n\r\0\x0B").';';
     
-    $current = file_get_contents('NETGEAR.csv');
-    $current .= pq('.sku .value')->text().';'.pq('.panel .std')->html().';\n';
-    file_put_contents('NETGEAR.csv',$current);
+    //$current = file_get_contents('NETGEAR.csv');
+    //$current .= pq('.sku .value')->text().';'.pq('.panel .std')->html().';\n';
+    //file_put_contents('NETGEAR.csv',$current);
+    //$val_query.='("'.pq('.sku .value')->text().'","'.addslashes(/*pq('.panel .std')->html()*/$a.$b).'")';
+    
+    $query = "INSERT INTO `D-Link`(`article`, `description`) "
+            . "VALUES ('".pq('.sku .value')->text()."','".addslashes(pq('.panel .std')->html())."')";
+    $result = mysql_query($query) or die('Query failed: ' . mysql_error());
+    usleep(300);
     phpQuery::unloadDocuments();
 }
 
+ 
+# Выбор базы данных
 
+
+xprint($val_query);
+xprint($val_query);
+xprint(count($list_item));
 $time = microtime(true) - $start;
 printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);
 //xprint($list_item);
