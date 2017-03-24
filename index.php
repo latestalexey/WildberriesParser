@@ -2,7 +2,7 @@
 
 require_once 'vendor/autoload.php';
 $start = microtime(true);//начало отсчета времени работы скрипта
-$main_url = 'http://www.d2office.ru/brands/d-link.html=80&p=';//адрес магазина
+$main_url = 'http://www.d2office.ru/brands/d-link.html?limit=80&p=';//адрес магазина
 $page_get_request = '?page=';//добавочный адрес страница
 //$html = file_get_contents($main_url);//получаем главную страницу
 phpQuery::newDocument($html);//инициализация класса для главной страницы
