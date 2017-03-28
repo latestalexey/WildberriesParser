@@ -36,10 +36,10 @@ function multyrequest($urls)
     }
         
     foreach ($handles as $key => $channel) {
-        $tmp = explode(curl_multi_getcontent($channel),'\r\n\r\n');
-        $html[$key]['head'] = $tmp[0];
-        $html[$key]['body'] = $tmp[1];
-
+        $tmp = curl_multi_getcontent($channel);
+        
+        $html[$key]['head'] = htmlspecialchars(stristr($tmp,'<!DOCTYPE html>',true));
+        //$html[$key]['body'] = htmlspecialchars(stristr($tmp,'<!DOCTYPE html>'));
 
         curl_multi_remove_handle($multi, $channel);
     }

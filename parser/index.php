@@ -10,7 +10,7 @@ $main_url = 'https://www.wildberries.ru';   //адрес магазина
 $page_get_request = '?page=';               //добавочный адрес страница
 $page_size = '&pagesize=200';               //выводить по 200 товаров на страницу
 $list_menu_items = Array();                 //объявляем массив для данных
-$max_connet = 170;
+$max_connet = 1;
 
 
 get_categiry();                             //получам категории и подкатегории в переменную
@@ -27,7 +27,8 @@ foreach ($list_menu_items as $catkey => $catvalue) {
 /*foreach ($urls as $key => $value) {        // спарсили каждый пакет
     $htmls[$key] = multyrequest($value);
 }*/
-
+for($i=1;$i<=500;$i++)
+$a=0;//количество проходов
 $start = microtime(true);//начало отсчета времени работы скрипта
 //foreach ($urls as $key => $url) {
     $ex=true;
@@ -52,27 +53,28 @@ $start = microtime(true);//начало отсчета времени работ
             $htmls_tmp = multyrequest($pages_array);            //получили ответ со страницами
             unset($pages_array);
             foreach ($htmls_tmp as $key => $html) {
-                if((strpos($html['head'], 'TP/1.1 200 OK'))!=FALSE)
+                if((strpos($html['head'], 'TP/1.1 200 OK'))==FALSE)
                 {
-                    //unset($htmls_tmp[$key]);
-                    //$pages_array[count($pages_array)] = $key;
-                    $ex=false;
+                    unset($htmls_tmp[$key]);
+                    $pages_array[count($pages_array)] = $key;
+                    //$ex=false;
                 } 
-
+                
                 //xprint($html['head']);
             }
             //xprint($pages_array);
             
             $htmls += $htmls_tmp;
-            
+            $a++;
         }
         
         
-        if($corent_page>=2200)$ex=false;
+        if($corent_page>=200)$ex=false;
         
     }
     
 //}
-xprint(count($htmls));
+//xprint($a);
+//xprint($htmls);
 $time = microtime(true) - $start;//сохраняем время работы скрипта
 printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта

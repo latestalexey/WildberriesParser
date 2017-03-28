@@ -6,7 +6,7 @@ function xprint($param, $title = 'Отладочная информация') {
     ini_set('xdebug.var_display_max_data', 999999999);
     if (PHP_SAPI == 'cli') {
         echo "\n--------------[$title]---------------\n";
-        echo var_dump($param, TRUE);
+        echo var_dump($param);
         echo "\n-------------------------------------\n";
     } else {
         ?>
@@ -26,7 +26,7 @@ function xprint($param, $title = 'Отладочная информация') {
                 <?= $title ?>
             </div>
             <pre style="color: #000;">
-                <?= htmlspecialchars(var_dump($param, TRUE)) ?>
+                <?= htmlspecialchars(var_dump($param)) ?>
             </pre>
         </div><?php
     }
