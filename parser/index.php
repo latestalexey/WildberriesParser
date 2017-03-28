@@ -27,7 +27,8 @@ foreach ($list_menu_items as $catkey => $catvalue) {
 /*foreach ($urls as $key => $value) {        // спарсили каждый пакет
     $htmls[$key] = multyrequest($value);
 }*/
-for($i=1;$i<=500;$i++)
+mysql_select_db('test') or die('Не могу выбрать базу данных');
+for(;$max_connet<=50;$max_connet++){
 $a=0;//количество проходов
 $start = microtime(true);//начало отсчета времени работы скрипта
 //foreach ($urls as $key => $url) {
@@ -69,7 +70,7 @@ $start = microtime(true);//начало отсчета времени работ
         }
         
         
-        if($corent_page>=200)$ex=false;
+        if($corent_page>50)$ex=false;
         
     }
     
@@ -77,4 +78,10 @@ $start = microtime(true);//начало отсчета времени работ
 //xprint($a);
 //xprint($htmls);
 $time = microtime(true) - $start;//сохраняем время работы скрипта
-printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
+
+$query = "INSERT INTO `max_connect`(`max_con`,`time_to_con`,`count_step`,`con_time_out`,`usleep`,`count_page`) "
+                . "VALUES ('".$max_connet."','".$time."','".$a."','0','100','50')";
+        $result = mysql_query($query) or die('Query failed: ' . mysql_error());
+}
+
+//printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
