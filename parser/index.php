@@ -10,7 +10,7 @@ $main_url = 'https://www.wildberries.ru';   //адрес магазина
 $page_get_request = '?page=';               //добавочный адрес страница
 $page_size = '&pagesize=200';               //выводить по 200 товаров на страницу
 $list_menu_items = Array();                 //объявляем массив для данных
-$max_connet = 1;
+$max_connet = 10;
 
 
 get_categiry();                             //получам категории и подкатегории в переменную
@@ -28,7 +28,8 @@ foreach ($list_menu_items as $catkey => $catvalue) {
     $htmls[$key] = multyrequest($value);
 }*/
 mysql_close();
-for(;$max_connet<=50;$max_connet++){
+$res='';
+
 
     
 $a=0;//количество проходов
@@ -72,7 +73,7 @@ $start = microtime(true);//начало отсчета времени работ
         }
         
         
-        if($corent_page>50)$ex=false;
+        if($corent_page>1000)$ex=false;
         
     }
     
@@ -80,14 +81,19 @@ $start = microtime(true);//начало отсчета времени работ
 //xprint($a);
 //xprint($htmls);
 $time = microtime(true) - $start;//сохраняем время работы скрипта
+
+$res ="('".$max_connet."','".$time."','".$a."','0','100','1000')";
 mysql_connect('localhost', 'root', '') or die('Could not connect: ' . mysql_error());
 mysql_select_db('test') or die('Не могу выбрать базу данных');
 $query = "INSERT INTO `max_connect`(`max_con`,`time_to_con`,`count_step`,`con_time_out`,`usleep`,`count_page`) "
-                . "VALUES ('".$max_connet."','".$time."','".$a."','0','100','50')";
+                . "VALUES ".$res;
         $result = mysql_query($query) or die('Query failed: ' . mysql_error());
 mysql_close();
-sleep(30);
 
-}
-
-//printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
+/*mysql_connect('localhost', 'root', '') or die('Could not connect: ' . mysql_error());
+mysql_select_db('test') or die('Не могу выбрать базу данных');
+$query = "INSERT INTO `max_connect`(`max_con`,`time_to_con`,`count_step`,`con_time_out`,`usleep`,`count_page`) "
+                . "VALUES".$res;
+        $result = mysql_query($query) or die('Query failed: ' . mysql_error());
+mysql_close();*/
+printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
