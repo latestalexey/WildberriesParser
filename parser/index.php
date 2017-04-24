@@ -10,7 +10,7 @@ $main_url = 'https://www.wildberries.ru';   //адрес магазина
 $page_get_request = '?page=';               //добавочный адрес страница
 $page_size = '&pagesize=200';               //выводить по 200 товаров на страницу
 $list_menu_items = Array();                 //объявляем массив для данных
-$max_connet = 10;
+$max_connet = 20;
 
 
 get_categiry();                             //получам категории и подкатегории в переменную
@@ -28,6 +28,8 @@ foreach ($list_menu_items as $catkey => $catvalue) {
     $htmls[$key] = multyrequest($value);
 }*/
 mysql_close();
+for($j=0;$j<100;$j++)
+{
 $res='';
 
 
@@ -82,14 +84,14 @@ $start = microtime(true);//начало отсчета времени работ
 //xprint($htmls);
 $time = microtime(true) - $start;//сохраняем время работы скрипта
 
-$res ="('".$max_connet."','".$time."','".$a."','0','100','1000')";
+$res ="('".$max_connet."','".$time."','".$a."','1','100','1000')";
 mysql_connect('localhost', 'root', '') or die('Could not connect: ' . mysql_error());
 mysql_select_db('test') or die('Не могу выбрать базу данных');
 $query = "INSERT INTO `max_connect`(`max_con`,`time_to_con`,`count_step`,`con_time_out`,`usleep`,`count_page`) "
                 . "VALUES ".$res;
         $result = mysql_query($query) or die('Query failed: ' . mysql_error());
 mysql_close();
-
+}
 /*mysql_connect('localhost', 'root', '') or die('Could not connect: ' . mysql_error());
 mysql_select_db('test') or die('Не могу выбрать базу данных');
 $query = "INSERT INTO `max_connect`(`max_con`,`time_to_con`,`count_step`,`con_time_out`,`usleep`,`count_page`) "
