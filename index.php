@@ -2,71 +2,108 @@
 
 require_once 'vendor/autoload.php';
 $start = microtime(true);//начало отсчета времени работы скрипта
-$main_url = 'http://www.d2office.ru/brands/d-link.html?limit=80&p=';//адрес магазина
-$page_get_request = '?page=';//добавочный адрес страница
-//$html = file_get_contents($main_url);//получаем главную страницу
+$main_url = 'http://www.garantgroup.com';//адрес магазина
+//$page_get_request = '?page=';//добавочный адрес страница
+$html = file_get_contents($main_url.'/katalog/');//получаем главную страницу
 phpQuery::newDocument($html);//инициализация класса для главной страницы
 
-$list_menu_item_dom = pq('ul.topmenus')->children('li:not(.divider)'
-        . ':not(.submenuless)'
-        . ':not(.row-divider)'
-        . ':not(.promo-offer)'
-        . ':not(.brands)'
-        . ':not(.certificate)'); // получаем список категорий
+$list_menu_item_dom = pq('#partnersBySHCG')->children('a'); // получаем список категорий
 $list_menu_items = Array();//объявляем массив для данных
 
 
 
 /*-----------------получаем список категорий-------------------------*/
-/*foreach ($list_menu_item_dom as $key => $value) {
+foreach ($list_menu_item_dom as $key => $value) {
 
-    $li = pq($value)->children('a');//вытаскиваем элемент "ссылка"
+    $li = pq($value);//вытаскиваем элемент "ссылка"
 
-    if ($li->html() !== '' && $li->attr('href') !== '') {   //если ссылка и имя не пустые
-        $list_menu_items[$key]['name'] = $li->html();       // то записываем название категории
+    //if ($li->html() !== '' && $li->attr('href') !== '') {   //если ссылка и имя не пустые
+        $list_menu_items[$key]['name'] = $li->attr('title');       // то записываем название категории 
         $list_menu_items[$key]['link'] = $li->attr('href'); // и ссылку на ее страницу
-    }
+        $list_menu_items[$key]['count_page'] = 1;
+    //}
 }
 phpQuery::unloadDocuments();//убиваем класс для главной страницы, освобождаем место
-$time = microtime(true) - $start;//сохраняем время работы скрипта
-printf('Чтение категорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
- */
+//$time = microtime(true) - $start;//сохраняем время работы скрипта
+//printf('Чтение категорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта
+
+
 /*-------------------------------------------------------------------*/
 
 
 /*-------------------получаем список подкатегорий--------------------*/
-/*foreach ($list_menu_items as $key => $value) {//пробегаем по всем категриям
-    $html_temp = file_get_contents($value['link']);//загружаем страницу категории
-    phpQuery::newDocument($html_temp);//инициализируем класс для страницыкатегории
+$list_items = Array();
+foreach ($list_menu_items as $key => $value) {//пробегаем по всем категриям
+    $page = 1;
+    //while($page<=$list_menu_items[$key]['count_page']){
+        $html_temp = file_get_contents($main_url.$value['link'].'&PAGEN_1='.$page.'&SIZEN_1=10');//загружаем страницу категории
+        phpQuery::newDocument($html_temp);//инициализируем класс для страницыкатегории
 
-    $list_submenu_item_dom = pq('ul.maincatalog-list-1')->children('li:not(.j-all-menu-item)');//получаем список подкатегорий
-    foreach ($list_submenu_item_dom as $keys => $val) {//парсим список подкатегорий
-        $li_submenu = pq($val)->children('a');
-        $list_menu_items[$key]['subcategories'][$keys]['name'] = $li_submenu->html();
-        $list_menu_items[$key]['subcategories'][$keys]['link'] = $li_submenu->attr('href');
-    }
-    phpQuery::unloadDocuments();//убиваем класс для страницы категории освобождаем место
+        $list_submenu_item_dom = pq('#itemsBySHCG')->children('.itemblock');//получаем список подкатегорий
+
+
+        $list_submenu_item_dom_count = pq('#itemsBySHCG .bx_pagination_page ul')->children('li');
+
+        //xd($list_submenu_item_dom_count->html());
+        foreach ($list_submenu_item_dom_count as $k => $v) {
+            $li_submenu = pq($v)->children('a');
+
+            if(empty($list_menu_items[$key]['count_page']) || $list_menu_items[$key]['count_page']<(int)$li_submenu->html()){
+                $list_menu_items[$key]['count_page'] = $li_submenu->html();
+            }
+        }
+
+        foreach ($list_submenu_item_dom as $keys => $val) {//парсим список подкатегорий
+            $li_submenu = pq($val)->children('a');
+            //$list_menu_items[$key]['products'][$keys]['name'] = $li_submenu->html();
+            $list_items[$key]['products'][]['link'] = $li_submenu->attr('href');
+        }
+        phpQuery::unloadDocuments();//убиваем класс для страницы категории освобождаем место
+        $page++;
+    //}
 }
+
+foreach ($list_menu_items as $key => $value) {
+    mkdir("garantgroup/".str_replace("/companies/?companies=", "",$value['link']), 0777);die();
+    /*
+    $html_temp = file_get_contents($main_url.$value);
+    phpQuery::newDocument($html_temp);
+    
+    $img = pq('.itemblock .one')->attr('src');
+    
+    phpQuery::unloadDocuments();*/
+}
+/*
+mysql_connect('localhost', 'root', '') or die('Could not connect: ' . mysql_error());
+mysql_select_db('test') or die('Не могу выбрать базу данных');
+$query = "INSERT INTO `garantgroup`(`art_number`,`description`,`image`) "
+                . "VALUES ".$res;
+        $result = mysql_query($query) or die('Query failed: ' . mysql_error());
+mysql_close();*/
+
+
+xd($list_items);
+/*
 $time = microtime(true) - $start;//сохраняем время работы скрипта
 printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта*/
 /*-------------------------------------------------------------------*/
-
+/*
 $list_item =Array();
 $count_page = 1;
 $file_string = '';
-/*--------------------------собираем список карточек--------------------*/
+/*--------------------------собираем список карточек--------------------*//*
 for($i=1;$i<=$count_page;$i++)
 {
     
     /********собираем максимальную страницу**********/
-    $html_temp = file_get_contents($main_url.$i); //для каждой подкатегории нужно развернуть страницу и получить из нее данные
+   /* $html_temp = file_get_contents($main_url.$i); //для каждой подкатегории нужно развернуть страницу и получить из нее данные
     phpQuery::newDocument($html_temp);//создаем класс для этой страницы
     foreach (pq('.toolbar-bottom .pages.gen-direction-arrows1 li:not(.next):not(.previous):not(.current)')->children('a') as $k => $v) {//получаем количество страниц
         if((int)(pq($v)->html())>=$count_page)
         $count_page = (int)(pq($v)->html());
     }
     /**************************************************/
-    
+  /*  
     foreach (pq('.product-name')->children('a') as $k => $v) {//получаем количество страниц
         $list_item[count($list_item)]['link'] = pq($v)->attr('href');
     }
@@ -85,7 +122,7 @@ foreach ($list_item as $key => $value) {
     //$current = file_get_contents('NETGEAR.csv');
     //$current .= pq('.sku .value')->text().';'.pq('.panel .std')->html().';\n';
     //file_put_contents('NETGEAR.csv',$current);
-    //$val_query.='("'.pq('.sku .value')->text().'","'.addslashes(/*pq('.panel .std')->html()*/$a.$b).'")';
+    //$val_query.='("'.pq('.sku .value')->text().'","'.addslashes(/*pq('.panel .std')->html/*$a.$b).'")';
     
     $query = "INSERT INTO `D-Link`(`article`, `description`) "
             . "VALUES ('".pq('.sku .value')->text()."','".addslashes(pq('.panel .std')->html())."')";
