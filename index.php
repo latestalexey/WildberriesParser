@@ -1,5 +1,5 @@
 <?php
-
+set_time_limit (50000000);
 require_once 'vendor/autoload.php';
 $start = microtime(true);//начало отсчета времени работы скрипта
 $main_url = 'http://www.garantgroup.com';//адрес магазина
@@ -35,7 +35,7 @@ phpQuery::unloadDocuments();//убиваем класс для главной с
 $list_items = Array();
 foreach ($list_menu_items as $key => $value) {//пробегаем по всем категриям
     $page = 1;
-    //while($page<=$list_menu_items[$key]['count_page']){
+    while($page<=$list_menu_items[$key]['count_page']){
         $html_temp = file_get_contents($main_url.$value['link'].'&PAGEN_1='.$page.'&SIZEN_1=10');//загружаем страницу категории
         phpQuery::newDocument($html_temp);//инициализируем класс для страницыкатегории
 
@@ -56,22 +56,47 @@ foreach ($list_menu_items as $key => $value) {//пробегаем по всем
         foreach ($list_submenu_item_dom as $keys => $val) {//парсим список подкатегорий
             $li_submenu = pq($val)->children('a');
             //$list_menu_items[$key]['products'][$keys]['name'] = $li_submenu->html();
-            $list_items[$key]['products'][]['link'] = $li_submenu->attr('href');
+            $list_menu_items[$key]['products'][]['link'] = $li_submenu->attr('href');
         }
         phpQuery::unloadDocuments();//убиваем класс для страницы категории освобождаем место
         $page++;
-    //}
+    }
 }
-
+//xd($list_menu_items);
 foreach ($list_menu_items as $key => $value) {
-    mkdir("garantgroup/".str_replace("/companies/?companies=", "",$value['link']), 0777);die();
-    /*
-    $html_temp = file_get_contents($main_url.$value);
-    phpQuery::newDocument($html_temp);
-    
-    $img = pq('.itemblock .one')->attr('src');
-    
-    phpQuery::unloadDocuments();*/
+    mkdir("garantgroup/".str_replace("/companies/?companies=", "",$value['link']), 0777);
+    foreach ($value['products'] as $k => $v) {
+        $html_temp = file_get_contents($main_url.$v['link']);//загружаем страницу категории
+        phpQuery::newDocument($html_temp);//инициализируем класс для страницыкатегории
+        if(!strripos(pq('.itemblock .prodImg')->attr('href'),'garant150.jpg')){
+            //$list_menu_items[$key]['products'][$k]['img_url'] = pq('.itemblock .prodImg')->attr('href');
+            //$list_menu_items[$key]['products'][$k]['img_name'] = preg_replace('/\/.*\//','',pq('.itemblock .prodImg')->attr('href'));
+        
+            
+            $url = $main_url.pq('.itemblock .prodImg')->attr('href');
+            $path = "garantgroup/".str_replace("/companies/?companies=", "",$value['link'])."/".preg_replace('/\/.*\//','',pq('.itemblock .prodImg')->attr('href'));
+            $list_menu_items[$key]['products'][$k]['img'] = $path;
+            file_put_contents($path, file_get_contents($url));
+        }
+        
+        $p = pq('.itemblock p');
+        foreach ($p as $kp => $vp) {
+            if($kp==1){
+                $list_menu_items[$key]['products'][$k]['art_number'] = str_replace("Код товара: ","",pq($vp)->html());
+            }
+        }
+        $list_menu_items[$key]['products'][$k]['description'] = pq('#tabs-1')->html();
+        phpQuery::unloadDocuments();//убиваем класс для страницы категории освобождаем место
+        
+        
+        mysql_connect('localhost', 'root', '') or die('Could not connect: ' . mysql_error());
+        mysql_select_db('test') or die('Не могу выбрать базу данных');
+        $query = "INSERT INTO `garantgroup`(`art_number`,`description`,`image`) "
+                        . "VALUES `art_number`=".$list_menu_items[$key]['products'][$k]['art_number'].",`description`=".$list_menu_items[$key]['products'][$k]['description'].",`image`=".$list_menu_items[$key]['products'][$k]['img'];
+                $result = mysql_query($query) or die('Query failed: ' . mysql_error());
+        mysql_close();
+    }
+    //xd($list_menu_items);
 }
 /*
 mysql_connect('localhost', 'root', '') or die('Could not connect: ' . mysql_error());
@@ -82,8 +107,8 @@ $query = "INSERT INTO `garantgroup`(`art_number`,`description`,`image`) "
 mysql_close();*/
 
 
-xd($list_items);
-/*
+
+
 $time = microtime(true) - $start;//сохраняем время работы скрипта
 printf('Чтение подкатегорий завершено через %.4F сек.</br>', $time);//вывводим время работы скрипта*/
 /*-------------------------------------------------------------------*/
