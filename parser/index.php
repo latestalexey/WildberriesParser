@@ -1,23 +1,60 @@
-<?php 
+<?php
 require_once '../vendor/autoload.php';
-//require_once '../db_connect.php';      //подключиться к базе
-//require_once '../write_res.php';       //выполнение запросов к базе
-//require_once 'multy_query.php';       //параллельные запросы
-require_once '../db_connect/db_connector.php';       //параллельные запросы
+require_once '../db_connect/db_connector.php';
 require_once '../Parser.php';
-
-$parser = new Parser;
 
 $main_url = 'https://www.wildberries.ru';   //адрес магазина
 $page_get_request = '?page=';               //добавочный адрес страница
-$page_size = '&pagesize=200';               //выводить по 200 товаров на страницу
+$page_size = '&pagesize=40';               //выводить по 200 товаров на страницу
 $fullArray = Array();                       //объявляем массив для данных
-$max_connet = 20;
+$max_connet = 24;
 
-$fullArray = $parser->get_categiry($main_url);  //получаем массив категорий
-xprint($fullArray );
+$Category = new category;
+$subCategory = new subcategory;
+
+$fullArray = $Category->category;
+$subcat = $subCategory->subcategory;
+
+foreach ($fullArray as $key => $value) {
+    foreach ($subcat as $k => $v) {
+        if ($value["id"] == $v["cat_id"])
+            $fullArray[$key]["subcategory"][] = $v;
+    }
+}
+unset($Category, $subCategory);
+
+//составляем пакеты ссылок для парсинга
+foreach ($fullArray as $key => $value) {
+    foreach ($value["subcategory"] as $k => $v) {                                      //по всем подкатегориям
+        $maxPage = Parser::get_inf_of_count_item($main_url . $v["subcat_link"] . $page_get_request . "1" . $page_size);  //парсим количество страниц в подкатегории
+        for ($thisPage = 1, $i = 0; $maxPage >= $thisPage; $i++, $thisPage++) {            //цикл по созданию пакетов
+
+            $urls[$i] = $main_url . $v["subcat_link"] . $page_get_request . $thisPage . $page_size; //пакет ссылок для передачи для загрузки
+
+            if ($thisPage % $max_connet == 0) {
+                $i = 0;
+                //$data = Parser::pars_page($urls);                                       //передача пакета
+                product::write();
+                /*внесение в базу*/
+                unset($urls, $data);
+                $urls = Array();
+            }
+
+            if (($maxPage - ($thisPage - ($i))) == count($urls)) {
+                $i = 0;
+                //$data = Parser::pars_page($urls);                                       //передача пакета
+                /*внесение в базу*/
+                unset($urls, $data);
+                $urls = Array();
+            }
+        }
+    }
+}
+
+//xprint( $fullArray );  //получаем массив категорий
+
+
 /*
-
 get_categiry($main_url);                             //получам категории и подкатегории в переменную
 
 $urls = Array();                            //список первых страниц каждой подкатегории
@@ -32,58 +69,58 @@ foreach ($list_menu_items as $catkey => $catvalue) {
 /*foreach ($urls as $key => $value) {        // спарсили каждый пакет
     $htmls[$key] = multyrequest($value);
 }*//*
-mysql_close();
-for($j=0;$j<100;$j++)
-{
-$res='';
-
-
-    
-$a=0;//количество проходов
-$start = microtime(true);//начало отсчета времени работы скрипта
-//foreach ($urls as $key => $url) {
-    $ex=true;
-    $corent_page = 1;                                   //текущая страница
-    $htmls = Array();                                   //массив с ответами
-    while($ex) 
+    mysql_close();
+    for($j=0;$j<100;$j++)
     {
-        $pages_array = Array();                         //массив страниц
-                                                                  
-        for($i=$corent_page;$i<$corent_page+$max_connet;$i++)    //собрали массив страниц для парсинга
+    $res='';
+
+
+
+    $a=0;//количество проходов
+    $start = microtime(true);//начало отсчета времени работы скрипта
+    //foreach ($urls as $key => $url) {
+        $ex=true;
+        $corent_page = 1;                                   //текущая страница
+        $htmls = Array();                                   //массив с ответами
+        while($ex)
         {
-            if($i!=1)
-                $pages_array[count($pages_array)] = $urls[0].$page_get_request.$i;
-            else
-                $pages_array[count($pages_array)] = $urls[0];
-        }
-        
-        $corent_page += $max_connet;
-        
-        while(isset($pages_array))
-        {
-            $htmls_tmp = multyrequest($pages_array);            //получили ответ со страницами
-            unset($pages_array);
-            foreach ($htmls_tmp as $key => $html) {
-                if((strpos($html['head'], 'TP/1.1 200 OK'))==FALSE)
-                {
-                    unset($htmls_tmp[$key]);
-                    $pages_array[count($pages_array)] = $key;
-                    //$ex=false;
-                } 
-                
-                //xprint($html['head']);
+            $pages_array = Array();                         //массив страниц
+
+            for($i=$corent_page;$i<$corent_page+$max_connet;$i++)    //собрали массив страниц для парсинга
+            {
+                if($i!=1)
+                    $pages_array[count($pages_array)] = $urls[0].$page_get_request.$i;
+                else
+                    $pages_array[count($pages_array)] = $urls[0];
             }
-            //xprint($pages_array);
-            
-            $htmls += $htmls_tmp;
-            $a++;
+
+            $corent_page += $max_connet;
+
+            while(isset($pages_array))
+            {
+                $htmls_tmp = multyrequest($pages_array);            //получили ответ со страницами
+                unset($pages_array);
+                foreach ($htmls_tmp as $key => $html) {
+                    if((strpos($html['head'], 'TP/1.1 200 OK'))==FALSE)
+                    {
+                        unset($htmls_tmp[$key]);
+                        $pages_array[count($pages_array)] = $key;
+                        //$ex=false;
+                    }
+
+                    //xprint($html['head']);
+                }
+                //xprint($pages_array);
+
+                $htmls += $htmls_tmp;
+                $a++;
+            }
+
+
+            if($corent_page>1000)$ex=false;
+
         }
-        
-        
-        if($corent_page>1000)$ex=false;
-        
-    }
-    */
+        */
 //}
 //xprint($a);
 //xprint($htmls);
