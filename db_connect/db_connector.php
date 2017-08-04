@@ -5,16 +5,6 @@
 
 class ORM
 {
-    public function __construct()
-    {
-        /*
-    public static $this->db_name = 'WildberriesParser';
-    public static $this->host = 'localhost';
-    public static $this->login = 'root';
-    public static $this->pass = '';
-         */
-    }
-
     public static $db_name = 'WildberriesParser';
     public static $host = 'localhost';
     public static $login = 'root';
@@ -59,7 +49,7 @@ class ORM
     }
 
     //писать в таблицу
-    /*protected function db_write(){
+    protected function db_write(){
         if(self::db_open_connection()){                     //если подключились к субд
             foreach (self::$query as $Table=>$arFields){
                 foreach($arFields as $field=>$ItemWrite){
@@ -72,7 +62,7 @@ class ORM
             }  
             return true;
         }else die('Не могу записать');
-    }*/
+    }
 
     //читать из таблицы
     protected function readTable($tName, $limit = false)
